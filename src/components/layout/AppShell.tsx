@@ -114,7 +114,7 @@ function SidebarContent({
       <div className="border-b border-sidebar-border px-5 py-5">
         <Logo dark subtitle={subtitle} />
       </div>
-      <NavLinks groups={groups} onNavigate={onNavigate} />
+      <NavLinks groups={groups} {...(onNavigate ? { onNavigate } : {})} />
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/50 px-3 py-2.5">
           <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-gold text-xs font-bold text-gold-foreground">

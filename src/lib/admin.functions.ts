@@ -182,17 +182,17 @@ export const updateSubscriptionDates = createServerFn({ method: "POST" })
 
     const patch: Record<string, unknown> = {};
     if (data.trialEndsAt) {
-      patch.trial_ends_at = data.trialEndsAt;
-      patch.renewal_at = data.trialEndsAt;
-      if (sub.status === "TRIAL" || sub.status === "SUSPENDED") patch.status = "TRIAL";
+      patch['trial_ends_at'] = data.trialEndsAt;
+      patch['renewal_at'] = data.trialEndsAt;
+      if (sub.status === "TRIAL" || sub.status === "SUSPENDED") patch['status'] = "TRIAL";
     }
-    if (data.renewalAt) patch.renewal_at = data.renewalAt;
-    if (data.status) patch.status = data.status;
+    if (data.renewalAt) patch['renewal_at'] = data.renewalAt;
+    if (data.status) patch['status'] = data.status;
 
     const { error } = await supabase.from("subscriptions").update(patch).eq("id", sub.id);
     if (error) throw new Error(error.message);
 
-    const finalStatus = (patch.status as SubStatus | undefined) ?? (sub.status as SubStatus);
+    const finalStatus = (patch['status'] as SubStatus | undefined) ?? (sub.status as SubStatus);
     await supabase.from("organizations").update({ status: orgStatusForSub(finalStatus) }).eq("id", data.organizationId);
 
     const action = data.trialEndsAt ? "subscription.trial_extended" : data.status ? "subscription.status_changed" : "subscription.expiry_changed";
