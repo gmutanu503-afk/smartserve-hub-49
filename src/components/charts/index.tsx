@@ -72,7 +72,7 @@ export function TrendAreaChart({
         </defs>
         <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis dataKey={xKey} {...axisProps} />
-        <YAxis {...axisProps} tickFormatter={formatter} width={64} />
+        <YAxis {...axisProps} {...(formatter ? { tickFormatter: formatter } : {})} width={64} />
         <Tooltip contentStyle={tooltipStyle} formatter={(v) => (formatter ? formatter(Number(v)) : v)} />
         {series.length > 1 && <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />}
         {series.map((s, i) => (
@@ -111,7 +111,7 @@ export function TrendLineChart({
       <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
         <XAxis dataKey={xKey} {...axisProps} />
-        <YAxis {...axisProps} tickFormatter={formatter} width={64} />
+        <YAxis {...axisProps} {...(formatter ? { tickFormatter: formatter } : {})} width={64} />
         <Tooltip contentStyle={tooltipStyle} formatter={(v) => (formatter ? formatter(Number(v)) : v)} />
         {series.length > 1 && <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />}
         {series.map((s, i) => (
@@ -160,13 +160,13 @@ export function SimpleBarChart({
         <CartesianGrid vertical={vertical} horizontal={!vertical} stroke="var(--border)" strokeDasharray="3 3" />
         {vertical ? (
           <>
-            <XAxis type="number" {...axisProps} tickFormatter={formatter} />
+            <XAxis type="number" {...axisProps} {...(formatter ? { tickFormatter: formatter } : {})} />
             <YAxis type="category" dataKey={xKey} {...axisProps} width={96} />
           </>
         ) : (
           <>
             <XAxis dataKey={xKey} {...axisProps} />
-            <YAxis {...axisProps} tickFormatter={formatter} width={64} />
+            <YAxis {...axisProps} {...(formatter ? { tickFormatter: formatter } : {})} width={64} />
           </>
         )}
         <Tooltip
@@ -182,7 +182,7 @@ export function SimpleBarChart({
             name={s.name}
             fill={s.color ?? CHART_COLORS[i]}
             radius={vertical ? [0, 6, 6, 0] : [6, 6, 0, 0]}
-            stackId={stacked ? "stack" : undefined}
+            {...(stacked ? { stackId: "stack" } : {})}
             maxBarSize={vertical ? 18 : 36}
           />
         ))}
