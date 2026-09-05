@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async () => {
     const user = await fetchCurrentUser();
     if (!user) throw redirect({ to: "/auth" });
-    if (user.organization?.status === "SUSPENDED") throw redirect({ to: "/suspended", replace: true });
+    if (user.organization?.status === "suspended") throw redirect({ to: "/suspended", replace: true });
   },
   component: ClientLayout,
 });
