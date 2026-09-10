@@ -1,14 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { FullPageLoader } from "@/components/kit/FullPageLoader";
 import { PageHeader } from "@/components/kit/PageHeader";
-import { EmptyState } from "@/components/kit/EmptyState";
-import { Construction } from "lucide-react";
+import { ProfileSettings } from "@/components/kit/ProfileSettings";
+import { useCurrentUser } from "@/lib/auth/use-auth";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
-  head: () => ({ meta: [{ title: "Platform settings — SmartServe" }, { name: "robots", content: "noindex" }] }),
-  component: () => (
-    <>
-      <PageHeader eyebrow="Platform" title="Settings" description="Your profile and platform preferences." />
-      <EmptyState icon={Construction} title="Settings coming next" description="Profile and platform configuration will live here." />
-    </>
-  ),
+  head: () => ({
+    meta: [
+      { title: "Settings — SmartServe Control Center" },
+      { name: "description", content: "Manage your SmartServe platform profile and security settings." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: AdminSettings,
 });
+
+function AdminSettings() {
+  const { data: user } = useCurrentUser();
+  if (!user) return <FullPageLoader label="Loading settings…" />;
+  return (
+    <>
+      <PageHeader eyebrow="Platform" title="Settings" description="Your profile, access and security." />
+      <ProfileSettings user={user} />
+    </>
+  );
+}

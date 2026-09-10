@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { BarChart3, LayoutDashboard, Settings, Store, Users } from "lucide-react";
+import { BarChart3, CreditCard, LayoutDashboard, Settings, Store, Users } from "lucide-react";
 import { AppShell, type NavGroup } from "@/components/layout/AppShell";
 import { FullPageLoader } from "@/components/kit/FullPageLoader";
 import { fetchCurrentUser, useCurrentUser } from "@/lib/auth/use-auth";
@@ -8,12 +8,18 @@ const groups: NavGroup[] = [
   {
     items: [
       { label: "Dashboard", to: "/app", icon: LayoutDashboard, exact: true },
-      { label: "Branches", to: "/app/branches", icon: Store, comingSoon: true },
-      { label: "Staff", to: "/app/staff", icon: Users, comingSoon: true },
-      { label: "Analytics", to: "/app/analytics", icon: BarChart3, comingSoon: true },
+      { label: "Branches", to: "/app/branches", icon: Store },
+      { label: "Staff", to: "/app/staff", icon: Users },
+      { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
     ],
   },
-  { label: "Account", items: [{ label: "Settings", to: "/app/settings", icon: Settings }] },
+  {
+    label: "Account",
+    items: [
+      { label: "Subscription", to: "/app/subscription", icon: CreditCard },
+      { label: "Settings", to: "/app/settings", icon: Settings },
+    ],
+  },
 ];
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -32,7 +38,7 @@ function ClientLayout() {
     <AppShell
       user={user}
       groups={groups}
-      subtitle="Client Admin"
+      subtitle="Workspace"
       {...(user.organization?.name ? { contextLabel: user.organization.name } : {})}
     >
       <Outlet />

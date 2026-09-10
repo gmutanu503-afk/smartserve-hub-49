@@ -17,12 +17,17 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAppRouteRouteImport } from './routes/_authenticated/app/route'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminFeaturesRouteImport } from './routes/_authenticated/admin/features'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin/plans'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminSubscriptionsRouteImport } from './routes/_authenticated/admin/subscriptions'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app/index'
+import { Route as AuthenticatedAppBranchesRouteImport } from './routes/_authenticated/app/branches'
 import { Route as AuthenticatedAppSettingsRouteImport } from './routes/_authenticated/app/settings'
+import { Route as AuthenticatedAppStaffRouteImport } from './routes/_authenticated/app/staff'
 import { Route as AuthenticatedAdminClientsIndexRouteImport } from './routes/_authenticated/admin/clients.index'
 import { Route as AuthenticatedAdminClientsIdRouteImport } from './routes/_authenticated/admin/clients.$id'
 
@@ -65,6 +70,17 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminAnalyticsRoute =
+  AuthenticatedAdminAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminFeaturesRoute =
   AuthenticatedAdminFeaturesRouteImport.update({
     id: '/features',
@@ -88,17 +104,33 @@ const AuthenticatedAdminSubscriptionsRoute =
     path: '/subscriptions',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAppRouteRoute,
 } as any)
+const AuthenticatedAppBranchesRoute =
+  AuthenticatedAppBranchesRouteImport.update({
+    id: '/branches',
+    path: '/branches',
+    getParentRoute: () => AuthenticatedAppRouteRoute,
+  } as any)
 const AuthenticatedAppSettingsRoute =
   AuthenticatedAppSettingsRouteImport.update({
     id: '/settings',
     path: '/settings',
     getParentRoute: () => AuthenticatedAppRouteRoute,
   } as any)
+const AuthenticatedAppStaffRoute = AuthenticatedAppStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => AuthenticatedAppRouteRoute,
+} as any)
 const AuthenticatedAdminClientsIndexRoute =
   AuthenticatedAdminClientsIndexRouteImport.update({
     id: '/clients/',
@@ -119,11 +151,16 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/app': typeof AuthenticatedAppRouteRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/features': typeof AuthenticatedAdminFeaturesRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/app/branches': typeof AuthenticatedAppBranchesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app/staff': typeof AuthenticatedAppStaffRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
   '/admin/clients/$id': typeof AuthenticatedAdminClientsIdRoute
@@ -134,11 +171,16 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/suspended': typeof SuspendedRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/features': typeof AuthenticatedAdminFeaturesRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/app/branches': typeof AuthenticatedAppBranchesRoute
   '/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/app/staff': typeof AuthenticatedAppStaffRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
   '/admin/clients/$id': typeof AuthenticatedAdminClientsIdRoute
@@ -153,11 +195,16 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/features': typeof AuthenticatedAdminFeaturesRoute
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/app/branches': typeof AuthenticatedAppBranchesRoute
   '/_authenticated/app/settings': typeof AuthenticatedAppSettingsRoute
+  '/_authenticated/app/staff': typeof AuthenticatedAppStaffRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/admin/clients/$id': typeof AuthenticatedAdminClientsIdRoute
@@ -172,11 +219,16 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/dashboard'
+    | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/features'
     | '/admin/plans'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/users'
+    | '/app/branches'
     | '/app/settings'
+    | '/app/staff'
     | '/admin/'
     | '/app/'
     | '/admin/clients/$id'
@@ -187,11 +239,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/suspended'
     | '/dashboard'
+    | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/features'
     | '/admin/plans'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/users'
+    | '/app/branches'
     | '/app/settings'
+    | '/app/staff'
     | '/admin'
     | '/app'
     | '/admin/clients/$id'
@@ -205,11 +262,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/_authenticated/dashboard'
+    | '/_authenticated/admin/analytics'
+    | '/_authenticated/admin/audit'
     | '/_authenticated/admin/features'
     | '/_authenticated/admin/plans'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/subscriptions'
+    | '/_authenticated/admin/users'
+    | '/_authenticated/app/branches'
     | '/_authenticated/app/settings'
+    | '/_authenticated/app/staff'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
     | '/_authenticated/admin/clients/$id'
@@ -281,6 +343,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/analytics': {
+      id: '/_authenticated/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/features': {
       id: '/_authenticated/admin/features'
       path: '/features'
@@ -309,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/app/': {
       id: '/_authenticated/app/'
       path: '/'
@@ -316,11 +399,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRouteRoute
     }
+    '/_authenticated/app/branches': {
+      id: '/_authenticated/app/branches'
+      path: '/branches'
+      fullPath: '/app/branches'
+      preLoaderRoute: typeof AuthenticatedAppBranchesRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
     '/_authenticated/app/settings': {
       id: '/_authenticated/app/settings'
       path: '/settings'
       fullPath: '/app/settings'
       preLoaderRoute: typeof AuthenticatedAppSettingsRouteImport
+      parentRoute: typeof AuthenticatedAppRouteRoute
+    }
+    '/_authenticated/app/staff': {
+      id: '/_authenticated/app/staff'
+      path: '/staff'
+      fullPath: '/app/staff'
+      preLoaderRoute: typeof AuthenticatedAppStaffRouteImport
       parentRoute: typeof AuthenticatedAppRouteRoute
     }
     '/_authenticated/admin/clients/': {
@@ -341,10 +438,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAnalyticsRoute: typeof AuthenticatedAdminAnalyticsRoute
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminFeaturesRoute: typeof AuthenticatedAdminFeaturesRoute
   AuthenticatedAdminPlansRoute: typeof AuthenticatedAdminPlansRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminSubscriptionsRoute: typeof AuthenticatedAdminSubscriptionsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminClientsIdRoute: typeof AuthenticatedAdminClientsIdRoute
   AuthenticatedAdminClientsIndexRoute: typeof AuthenticatedAdminClientsIndexRoute
@@ -352,10 +452,13 @@ interface AuthenticatedAdminRouteRouteChildren {
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminAnalyticsRoute: AuthenticatedAdminAnalyticsRoute,
+    AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminFeaturesRoute: AuthenticatedAdminFeaturesRoute,
     AuthenticatedAdminPlansRoute: AuthenticatedAdminPlansRoute,
     AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
     AuthenticatedAdminSubscriptionsRoute: AuthenticatedAdminSubscriptionsRoute,
+    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminClientsIdRoute: AuthenticatedAdminClientsIdRoute,
     AuthenticatedAdminClientsIndexRoute: AuthenticatedAdminClientsIndexRoute,
@@ -367,12 +470,16 @@ const AuthenticatedAdminRouteRouteWithChildren =
   )
 
 interface AuthenticatedAppRouteRouteChildren {
+  AuthenticatedAppBranchesRoute: typeof AuthenticatedAppBranchesRoute
   AuthenticatedAppSettingsRoute: typeof AuthenticatedAppSettingsRoute
+  AuthenticatedAppStaffRoute: typeof AuthenticatedAppStaffRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
 const AuthenticatedAppRouteRouteChildren: AuthenticatedAppRouteRouteChildren = {
+  AuthenticatedAppBranchesRoute: AuthenticatedAppBranchesRoute,
   AuthenticatedAppSettingsRoute: AuthenticatedAppSettingsRoute,
+  AuthenticatedAppStaffRoute: AuthenticatedAppStaffRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
 
