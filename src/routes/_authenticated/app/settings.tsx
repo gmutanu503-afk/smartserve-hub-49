@@ -45,26 +45,26 @@ function ClientSettings() {
   );
 }
 
-function BusinessForm({ orgId, org, canEdit }: { orgId: string; org: { name: string; contact_email: string | null; contact_phone: string | null; country: string | null; currency: string | null; timezone: string | null }; canEdit: boolean }) {
+function BusinessForm({ orgId, org, canEdit }: { orgId: string; org: { name: string; owner_name: string; owner_email: string; phone: string | null; country: string | null; currency: string }; canEdit: boolean }) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     name: org.name,
-    contact_email: org.contact_email ?? "",
-    contact_phone: org.contact_phone ?? "",
+    owner_name: org.owner_name,
+    owner_email: org.owner_email,
+    phone: org.phone ?? "",
     country: org.country ?? "",
-    currency: org.currency ?? "KES",
-    timezone: org.timezone ?? "Africa/Nairobi",
+    currency: org.currency,
   });
 
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("organizations").update({
         name: form.name,
-        contact_email: form.contact_email || null,
-        contact_phone: form.contact_phone || null,
+        owner_name: form.owner_name,
+        owner_email: form.owner_email,
+        phone: form.phone || null,
         country: form.country || null,
         currency: form.currency,
-        timezone: form.timezone,
       }).eq("id", orgId);
       if (error) throw new Error(error.message);
     },
@@ -83,11 +83,11 @@ function BusinessForm({ orgId, org, canEdit }: { orgId: string; org: { name: str
     <SectionCard title="Business details" description="Shown on receipts, invoices and customer-facing screens.">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">{field("name", "Business name")}</div>
-        {field("contact_email", "Contact email")}
-        {field("contact_phone", "Contact phone")}
+        {field("owner_name", "Owner name")}
+        {field("owner_email", "Contact email")}
+        {field("phone", "Contact phone")}
         {field("country", "Country")}
-        {field("currency", "Currency", "KES")}
-        <div className="sm:col-span-2">{field("timezone", "Timezone", "Africa/Nairobi")}</div>
+        <div className="sm:col-span-2">{field("currency", "Currency", "KES")}</div>
       </div>
       {canEdit ? (
         <Button variant="gold" className="mt-5" disabled={save.isPending} onClick={() => save.mutate()}>{save.isPending ? "Saving…" : "Save changes"}</Button>
