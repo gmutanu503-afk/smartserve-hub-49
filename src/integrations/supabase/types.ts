@@ -227,6 +227,78 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          branch_id: string | null
+          created_at: string
+          email: string
+          email_sent_at: string | null
+          expires_at: string
+          full_name: string | null
+          id: string
+          invited_by: string | null
+          invited_by_email: string | null
+          message: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          branch_id?: string | null
+          created_at?: string
+          email: string
+          email_sent_at?: string | null
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          invited_by_email?: string | null
+          message?: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          branch_id?: string | null
+          created_at?: string
+          email?: string
+          email_sent_at?: string | null
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          invited_by_email?: string | null
+          message?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_categories: {
         Row: {
           branch_id: string | null
@@ -990,7 +1062,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      invitation_preview: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          organization_name: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+        }[]
+      }
       is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_manager: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
