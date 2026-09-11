@@ -272,7 +272,7 @@ function Detail({ icon: Icon, label, value }: { icon?: typeof Mail; label: strin
   );
 }
 
-function UsageRow({ label, value, limit }: { label: string; value: number | undefined; limit?: number }) {
+function UsageRow({ label, value, limit }: { label: string; value: number | undefined; limit?: number | undefined }) {
   const pct = limit && value !== undefined ? Math.min(100, Math.round((value / limit) * 100)) : null;
   return (
     <li>
