@@ -9,7 +9,7 @@ interface StatCardProps {
   icon?: LucideIcon;
   change?: number;
   changeLabel?: string;
-  hint?: string;
+  hint?: string | undefined;
   tone?: "default" | "gold" | "navy";
   loading?: boolean;
   className?: string;

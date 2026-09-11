@@ -51,7 +51,7 @@ function SubscriptionPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="font-display text-3xl font-bold">{plan?.name ?? "No plan"}</p>
-              <p className="mt-1 text-muted-foreground">{plan ? `${formatMoney(sub?.price ?? plan.price, currency)} per ${sub?.billing_cycle === "yearly" ? "year" : "month"}` : "Contact support to choose a plan."}</p>
+              <p className="mt-1 text-muted-foreground">{plan ? `${formatMoney(sub?.price ?? plan.price_monthly, currency)} per ${sub?.billing_cycle === "yearly" ? "year" : "month"}` : "Contact support to choose a plan."}</p>
             </div>
             {sub && <SubscriptionStatusBadge status={sub.status} />}
           </div>
@@ -116,7 +116,7 @@ function SubscriptionPage() {
                     <p className="font-display font-semibold">{p.name} {current && <Badge variant="gold" className="ml-1">Current</Badge>}</p>
                     <p className="text-xs text-muted-foreground">{p.branch_limit ?? "Unlimited"} branches · {p.user_limit ?? "Unlimited"} users</p>
                   </div>
-                  <p className="font-semibold">{formatMoney(p.price, currency)}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+                  <p className="font-semibold">{formatMoney(p.price_monthly, currency)}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
                 </div>
               );
             })}
