@@ -1,7 +1,15 @@
 import { format, formatDistanceToNow, differenceInDays } from "date-fns";
 
-export function formatMoney(value: number | string | null | undefined, currency = "USD") {
+export const DEFAULT_CURRENCY = "KES";
+
+/** Money is shown in Kenyan Shillings (KSh) unless a record stores another currency. */
+export function formatMoney(value: number | string | null | undefined, currency = DEFAULT_CURRENCY) {
   const n = Number(value ?? 0);
+  const amount = new Intl.NumberFormat("en-KE", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: n % 1 === 0 ? 0 : 2,
+  }).format(n);
+  if (!currency || currency.toUpperCase() === "KES") return `KSh ${amount}`;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
