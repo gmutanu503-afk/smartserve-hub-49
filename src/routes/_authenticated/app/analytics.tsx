@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/app/analytics")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: ClientAnalytics;
+  component: ClientAnalytics,
 });
 
 function ClientAnalytics() {
