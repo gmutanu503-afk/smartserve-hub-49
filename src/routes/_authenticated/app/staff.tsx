@@ -96,6 +96,9 @@ function StaffPage() {
         ]}
       />
 
+      {canManage && user && (
+        <PendingInvitations orgId={orgId} orgName={user.organization?.name ?? "your workspace"} inviterEmail={user.email} />
+      )}
     </>
   );
 }
