@@ -96,17 +96,6 @@ function StaffPage() {
         ]}
       />
 
-      <Dialog open={invite} onOpenChange={setInvite}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="font-display">Invite a teammate</DialogTitle>
-            <DialogDescription>
-              Ask your teammate to sign up at your SmartServe sign-in page using their work email. Once they create an account they'll appear here and you can assign their branch and role.
-            </DialogDescription>
-          </DialogHeader>
-          <Button variant="gold" onClick={() => setInvite(false)}>Got it</Button>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
