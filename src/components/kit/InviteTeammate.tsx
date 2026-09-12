@@ -62,8 +62,10 @@ export function InviteTeammate({ orgId, orgName, inviterEmail, inviterId }: Prop
     onSuccess: async (row) => {
       qc.invalidateQueries({ queryKey: ["org", orgId, "invitations"] });
       setOpen(false);
+      const email = form.email.trim().toLowerCase();
       setForm({ email: "", fullName: "", role: "staff", branchId: "none", message: "" });
       await copyLink(row.token, `Invitation created for ${row.email}`);
+      mailTo(email, row.token, orgName, inviterEmail);
     },
     onError: (e: Error) =>
       toast.error(
@@ -71,43 +73,6 @@ export function InviteTeammate({ orgId, orgName, inviterEmail, inviterId }: Prop
         { description: e.message },
       ),
   });
-
-  const revoke = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("invitations").update({ status: "revoked" }).eq("id", id);
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => { toast.success("Invitation cancelled"); qc.invalidateQueries({ queryKey: ["org", orgId, "invitations"] }); },
-    onError: (e: Error) => toast.error("Could not cancel", { description: e.message }),
-  });
-
-  const renew = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("invitations")
-        .update({ status: "pending", expires_at: new Date(Date.now() + 14 * 864e5).toISOString() })
-        .eq("id", id);
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => { toast.success("Invitation renewed for another 14 days"); qc.invalidateQueries({ queryKey: ["org", orgId, "invitations"] }); },
-    onError: (e: Error) => toast.error("Could not renew", { description: e.message }),
-  });
-
-  async function copyLink(token: string, title = "Invite link copied") {
-    try {
-      await navigator.clipboard.writeText(invitationLink(token));
-      toast.success(title, { description: "Paste it into a message or email to your teammate." });
-    } catch {
-      toast.info(invitationLink(token));
-    }
-  }
-
-  function mailTo(email: string, token: string) {
-    const body = `Hi,\n\n${orgName} has invited you to join their SmartServe workspace.\n\nCreate your account here:\n${invitationLink(token)}\n\nUse this exact email address (${email}) when signing up so you land in the right workspace.\n\nSee you inside,\n${inviterEmail}`;
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(`You're invited to join ${orgName} on SmartServe`)}&body=${encodeURIComponent(body)}`;
-  }
-
-  const pending = (invitations ?? []).filter((i) => i.status !== "accepted");
 
   return (
     <>
