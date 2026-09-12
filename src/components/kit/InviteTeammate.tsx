@@ -18,12 +18,26 @@ import { myBranchesQuery } from "@/lib/queries";
 
 type Props = { orgId: string; orgName: string; inviterEmail: string; inviterId: string };
 
-/** Invite dialog + pending invitation list, used by managers on the Staff page. */
+async function copyLink(token: string, title = "Invite link copied") {
+  try {
+    await navigator.clipboard.writeText(invitationLink(token));
+    toast.success(title, { description: "Paste it into a message or email to your teammate." });
+  } catch {
+    toast.info(invitationLink(token));
+  }
+}
+
+/** Opens the manager's own mail app with the invitation written out. */
+function mailTo(email: string, token: string, orgName: string, inviterEmail: string) {
+  const body = `Hi,\n\n${orgName} has invited you to join their SmartServe workspace.\n\nCreate your account here:\n${invitationLink(token)}\n\nUse this exact email address (${email}) when signing up so you land in the right workspace.\n\nSee you inside,\n${inviterEmail}`;
+  window.location.href = `mailto:${email}?subject=${encodeURIComponent(`You're invited to join ${orgName} on SmartServe`)}&body=${encodeURIComponent(body)}`;
+}
+
+/** Invite dialog, used by owners and branch managers on the Staff page. */
 export function InviteTeammate({ orgId, orgName, inviterEmail, inviterId }: Props) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const { data: branches } = useQuery({ ...myBranchesQuery(orgId), enabled: Boolean(orgId) });
-  const { data: invitations, isLoading } = useQuery({ ...invitationsQuery(orgId), enabled: Boolean(orgId) });
   const [form, setForm] = useState({ email: "", fullName: "", role: "staff", branchId: "none", message: "" });
 
   const invite = useMutation({
