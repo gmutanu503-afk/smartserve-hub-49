@@ -12,7 +12,18 @@ import { lovable } from "@/integrations/lovable/index";
 import { fetchCurrentUser, homePathFor, currentUserQueryKey } from "@/lib/auth/use-auth";
 import { useQueryClient } from "@tanstack/react-query";
 
-const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
+const searchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).optional(),
+  invite: z.string().optional(),
+});
+
+type InvitePreview = { organization_name: string; email: string; role: string; expires_at: string; status: string };
+
+const ROLE_COPY: Record<string, string> = {
+  client_admin: "Business owner / admin",
+  branch_manager: "Branch manager",
+  staff: "Staff member",
+};
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
@@ -36,12 +47,26 @@ function GoogleIcon() {
 }
 
 function AuthPage() {
-  const { mode = "signin" } = Route.useSearch();
+  const { mode = "signin", invite } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
   const [form, setForm] = useState({ fullName: "", organizationName: "", email: "", password: "" });
+  // Only two self-selectable account types — platform roles are never offered here.
+  const [accountType, setAccountType] = useState<"owner" | "team">(invite ? "team" : "owner");
+  const [preview, setPreview] = useState<InvitePreview | null>(null);
+
+  useEffect(() => {
+    if (!invite) return;
+    setAccountType("team");
+    void supabase.rpc("invitation_preview", { _token: invite }).then(({ data }) => {
+      const row = (data as InvitePreview[] | null)?.[0] ?? null;
+      setPreview(row);
+      if (row) setForm((f) => ({ ...f, email: row.email }));
+    });
+  }, [invite]);
+
 
   const goHome = async () => {
     queryClient.removeQueries({ queryKey: currentUserQueryKey });
@@ -66,7 +91,11 @@ function AuthPage() {
           password: form.password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: form.fullName, organization_name: form.organizationName },
+            data: {
+              full_name: form.fullName,
+              // Only owners create a new business; invited people join theirs.
+              organization_name: accountType === "owner" ? form.organizationName : "",
+            },
           },
         });
         if (error) throw error;
@@ -158,14 +187,49 @@ function AuthPage() {
               <form onSubmit={onSubmit} className="space-y-4">
                 {mode === "signup" && (
                   <>
+                    {preview && (
+                      <div className="rounded-lg border border-gold/40 bg-gold-soft px-3 py-2 text-xs">
+                        You were invited to <span className="font-semibold">{preview.organization_name}</span> as{" "}
+                        <span className="font-semibold">{ROLE_COPY[preview.role] ?? preview.role}</span>. Sign up with{" "}
+                        <span className="font-semibold">{preview.email}</span> to join their workspace.
+                      </div>
+                    )}
+                    {!invite && (
+                      <div className="space-y-1.5">
+                        <Label>Which describes you?</Label>
+                        <div className="grid gap-2">
+                          {([
+                            { value: "owner", title: "I own or run this business", hint: "Creates a brand-new workspace for your business." },
+                            { value: "team", title: "I'm joining a team", hint: "A manager or owner must send you an invitation link." },
+                          ] as const).map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => setAccountType(opt.value)}
+                              className={`rounded-lg border px-3 py-2 text-left text-sm transition ${accountType === opt.value ? "border-gold bg-gold-soft" : "border-border hover:bg-secondary"}`}
+                            >
+                              <span className="font-medium">{opt.title}</span>
+                              <span className="block text-xs text-muted-foreground">{opt.hint}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       <Label htmlFor="fullName">Your name</Label>
                       <Input id="fullName" required autoComplete="name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="org">Business name</Label>
-                      <Input id="org" required placeholder="e.g. Savanna Grill House" value={form.organizationName} onChange={(e) => setForm({ ...form, organizationName: e.target.value })} />
-                    </div>
+                    {accountType === "owner" && (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="org">Business name</Label>
+                        <Input id="org" required placeholder="e.g. Savanna Grill House" value={form.organizationName} onChange={(e) => setForm({ ...form, organizationName: e.target.value })} />
+                      </div>
+                    )}
+                    {accountType === "team" && !invite && (
+                      <p className="rounded-lg bg-secondary px-3 py-2 text-xs text-muted-foreground">
+                        Ask your manager for your invitation link, then open it to finish signing up. It keeps you inside your own business's dashboard only.
+                      </p>
+                    )}
                   </>
                 )}
                 <div className="space-y-1.5">
@@ -176,9 +240,9 @@ function AuthPage() {
                   <Label htmlFor="password">Password</Label>
                   <Input id="password" type="password" required minLength={6} autoComplete={mode === "signup" ? "new-password" : "current-password"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
                 </div>
-                <Button type="submit" variant="gold" className="w-full" disabled={loading}>
+                <Button type="submit" variant="gold" className="w-full" disabled={loading || (mode === "signup" && accountType === "team" && !invite)}>
                   {loading && <Loader2 className="animate-spin" />}
-                  {mode === "signup" ? "Create workspace" : "Sign in"}
+                  {mode === "signup" ? (accountType === "team" ? "Join workspace" : "Create workspace") : "Sign in"}
                 </Button>
               </form>
 

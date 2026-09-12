@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, UserPlus } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DataTable } from "@/components/kit/DataTable";
 import { PageHeader } from "@/components/kit/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { InviteTeammate, PendingInvitations } from "@/components/kit/InviteTeammate";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,9 +32,9 @@ function StaffPage() {
   const orgId = user?.organization?.id ?? "";
   const { data: staff, isLoading } = useQuery({ ...myStaffQuery(orgId), enabled: Boolean(orgId) });
   const { data: sub } = useQuery({ ...mySubscriptionQuery(orgId), enabled: Boolean(orgId) });
-  const canManage = user?.isClientAdmin ?? false;
+  // Owners and branch managers can both add teammates.
+  const canManage = Boolean(user?.isClientAdmin) || Boolean(user?.roles.includes("branch_manager"));
   const [search, setSearch] = useState("");
-  const [invite, setInvite] = useState(false);
 
   const toggleActive = useMutation({
     mutationFn: async (v: { id: string; is_active: boolean }) => {
@@ -54,7 +54,9 @@ function StaffPage() {
         eyebrow="Team"
         title="Staff"
         description={sub?.plans?.user_limit ? `${staff?.length ?? 0} of ${sub.plans.user_limit} seats used on your plan.` : "Everyone with access to your workspace."}
-        actions={canManage ? <Button variant="gold" onClick={() => setInvite(true)}><UserPlus /> Invite teammate</Button> : undefined}
+        actions={canManage && user ? (
+          <InviteTeammate orgId={orgId} orgName={user.organization?.name ?? "your workspace"} inviterEmail={user.email} inviterId={user.id} />
+        ) : undefined}
       />
       <div className="relative mb-4 max-w-md">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -94,17 +96,9 @@ function StaffPage() {
         ]}
       />
 
-      <Dialog open={invite} onOpenChange={setInvite}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="font-display">Invite a teammate</DialogTitle>
-            <DialogDescription>
-              Ask your teammate to sign up at your SmartServe sign-in page using their work email. Once they create an account they'll appear here and you can assign their branch and role.
-            </DialogDescription>
-          </DialogHeader>
-          <Button variant="gold" onClick={() => setInvite(false)}>Got it</Button>
-        </DialogContent>
-      </Dialog>
+      {canManage && user && (
+        <PendingInvitations orgId={orgId} orgName={user.organization?.name ?? "your workspace"} inviterEmail={user.email} />
+      )}
     </>
   );
 }

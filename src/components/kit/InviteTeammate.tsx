@@ -1,0 +1,193 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Copy, Mail, MailPlus, RotateCcw, UserPlus, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { DataTable } from "@/components/kit/DataTable";
+import { SectionCard } from "@/components/kit/PageHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDate, formatRelative } from "@/lib/format";
+import { INVITABLE_ROLES, invitationLink, invitationsQuery } from "@/lib/invitations";
+import { myBranchesQuery } from "@/lib/queries";
+
+type Props = { orgId: string; orgName: string; inviterEmail: string; inviterId: string };
+
+async function copyLink(token: string, title = "Invite link copied") {
+  try {
+    await navigator.clipboard.writeText(invitationLink(token));
+    toast.success(title, { description: "Paste it into a message or email to your teammate." });
+  } catch {
+    toast.info(invitationLink(token));
+  }
+}
+
+/** Opens the manager's own mail app with the invitation written out. */
+function mailTo(email: string, token: string, orgName: string, inviterEmail: string) {
+  const body = `Hi,\n\n${orgName} has invited you to join their SmartServe workspace.\n\nCreate your account here:\n${invitationLink(token)}\n\nUse this exact email address (${email}) when signing up so you land in the right workspace.\n\nSee you inside,\n${inviterEmail}`;
+  window.location.href = `mailto:${email}?subject=${encodeURIComponent(`You're invited to join ${orgName} on SmartServe`)}&body=${encodeURIComponent(body)}`;
+}
+
+/** Invite dialog, used by owners and branch managers on the Staff page. */
+export function InviteTeammate({ orgId, orgName, inviterEmail, inviterId }: Props) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const { data: branches } = useQuery({ ...myBranchesQuery(orgId), enabled: Boolean(orgId) });
+  const [form, setForm] = useState({ email: "", fullName: "", role: "staff", branchId: "none", message: "" });
+
+  const invite = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from("invitations")
+        .insert({
+          organization_id: orgId,
+          email: form.email.trim().toLowerCase(),
+          full_name: form.fullName.trim() || null,
+          role: form.role as "branch_manager" | "staff",
+          branch_id: form.branchId === "none" ? null : form.branchId,
+          message: form.message.trim() || null,
+          invited_by: inviterId,
+          invited_by_email: inviterEmail,
+        })
+        .select("token, email")
+        .single();
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: async (row) => {
+      qc.invalidateQueries({ queryKey: ["org", orgId, "invitations"] });
+      setOpen(false);
+      const email = form.email.trim().toLowerCase();
+      setForm({ email: "", fullName: "", role: "staff", branchId: "none", message: "" });
+      await copyLink(row.token, `Invitation created for ${row.email}`);
+      mailTo(email, row.token, orgName, inviterEmail);
+    },
+    onError: (e: Error) =>
+      toast.error(
+        e.message.includes("duplicate") ? "That person already has a pending invitation." : "Could not create the invitation",
+        { description: e.message },
+      ),
+  });
+
+  return (
+    <>
+      <Button variant="gold" onClick={() => setOpen(true)}><UserPlus /> Invite teammate</Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Invite a teammate</DialogTitle>
+            <DialogDescription>
+              They'll only ever see {orgName}'s data — never another business's dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div><Label htmlFor="i-name">Full name</Label><Input id="i-name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} placeholder="Amina Otieno" /></div>
+              <div><Label htmlFor="i-email">Work email</Label><Input id="i-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="amina@example.com" /></div>
+              <div>
+                <Label htmlFor="i-role">Role</Label>
+                <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}>
+                  <SelectTrigger id="i-role"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {INVITABLE_ROLES.map((r) => (
+                      <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="i-branch">Branch</Label>
+                <Select value={form.branchId} onValueChange={(v) => setForm({ ...form, branchId: v })}>
+                  <SelectTrigger id="i-branch"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">All branches</SelectItem>
+                    {(branches ?? []).map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="i-msg">Personal note (optional)</Label>
+              <Textarea id="i-msg" rows={2} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Welcome aboard! Your shifts start Monday." />
+            </div>
+            <p className="rounded-lg bg-secondary px-3 py-2 text-xs text-muted-foreground">
+              <MailPlus className="mr-1 inline size-3" />
+              We copy the invite link and open a ready-written email addressed to them. You can resend it any time from the list below.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="gold" disabled={!form.email.includes("@") || invite.isPending} onClick={() => invite.mutate()}>
+              {invite.isPending ? "Creating…" : "Create & email invite"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/** List of invitations that have not been accepted yet. */
+export function PendingInvitations({ orgId, orgName, inviterEmail }: Omit<Props, "inviterId">) {
+  const qc = useQueryClient();
+  const { data: invitations, isLoading } = useQuery({ ...invitationsQuery(orgId), enabled: Boolean(orgId) });
+
+  const update = useMutation({
+    mutationFn: async (v: { id: string; patch: { status?: string; expires_at?: string } }) => {
+      const { error } = await supabase.from("invitations").update(v.patch).eq("id", v.id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["org", orgId, "invitations"] }),
+    onError: (e: Error) => toast.error("Could not update the invitation", { description: e.message }),
+  });
+
+  const pending = (invitations ?? []).filter((i) => i.status !== "accepted");
+  if (!isLoading && pending.length === 0) return null;
+
+  return (
+    <SectionCard
+      title="Pending invitations"
+      description="They join your workspace automatically when they sign up with the invited email address."
+      className="mt-6"
+      bodyClassName="p-0"
+    >
+      <DataTable
+        loading={isLoading}
+        rows={pending}
+        rowKey={(i) => i.id}
+        empty="No pending invitations."
+        columns={[
+          { key: "who", header: "Invited", cell: (i) => <div><p className="font-medium">{i.full_name || i.email}</p><p className="text-xs text-muted-foreground">{i.email}</p></div> },
+          { key: "role", header: "Role", cell: (i) => <Badge variant={i.role === "branch_manager" ? "gold" : "secondary"}>{i.role === "branch_manager" ? "Branch manager" : "Staff"}</Badge> },
+          { key: "branch", header: "Branch", cell: (i) => i.branches?.name ?? "All branches" },
+          { key: "sent", header: "Created", cell: (i) => <span className="text-muted-foreground">{formatRelative(i.created_at)}</span> },
+          {
+            key: "state", header: "Status", cell: (i) =>
+              i.status === "revoked" ? <Badge variant="muted">Cancelled</Badge>
+                : new Date(i.expires_at) < new Date() ? <Badge variant="danger">Expired</Badge>
+                  : <Badge variant="info">Expires {formatDate(i.expires_at)}</Badge>,
+          },
+          {
+            key: "actions", header: "", cell: (i) => (
+              <div className="flex justify-end gap-1">
+                <Button size="icon" variant="ghost" title="Email this invitation" onClick={() => mailTo(i.email, i.token, orgName, inviterEmail)}><Mail className="size-4" /></Button>
+                <Button size="icon" variant="ghost" title="Copy invite link" onClick={() => void copyLink(i.token)}><Copy className="size-4" /></Button>
+                <Button
+                  size="icon" variant="ghost" title="Renew for 14 days"
+                  onClick={() => update.mutate({ id: i.id, patch: { status: "pending", expires_at: new Date(Date.now() + 14 * 864e5).toISOString() } })}
+                ><RotateCcw className="size-4" /></Button>
+                <Button size="icon" variant="ghost" title="Cancel invitation" onClick={() => update.mutate({ id: i.id, patch: { status: "revoked" } })}><X className="size-4" /></Button>
+              </div>
+            ),
+          },
+        ]}
+      />
+    </SectionCard>
+  );
+}
