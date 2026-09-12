@@ -12,7 +12,18 @@ import { lovable } from "@/integrations/lovable/index";
 import { fetchCurrentUser, homePathFor, currentUserQueryKey } from "@/lib/auth/use-auth";
 import { useQueryClient } from "@tanstack/react-query";
 
-const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
+const searchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).optional(),
+  invite: z.string().optional(),
+});
+
+type InvitePreview = { organization_name: string; email: string; role: string; expires_at: string; status: string };
+
+const ROLE_COPY: Record<string, string> = {
+  client_admin: "Business owner / admin",
+  branch_manager: "Branch manager",
+  staff: "Staff member",
+};
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
