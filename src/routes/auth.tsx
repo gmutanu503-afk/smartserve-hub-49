@@ -240,9 +240,9 @@ function AuthPage() {
                   <Label htmlFor="password">Password</Label>
                   <Input id="password" type="password" required minLength={6} autoComplete={mode === "signup" ? "new-password" : "current-password"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
                 </div>
-                <Button type="submit" variant="gold" className="w-full" disabled={loading}>
+                <Button type="submit" variant="gold" className="w-full" disabled={loading || (mode === "signup" && accountType === "team" && !invite)}>
                   {loading && <Loader2 className="animate-spin" />}
-                  {mode === "signup" ? "Create workspace" : "Sign in"}
+                  {mode === "signup" ? (accountType === "team" ? "Join workspace" : "Create workspace") : "Sign in"}
                 </Button>
               </form>
 
