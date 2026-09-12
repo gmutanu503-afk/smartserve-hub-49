@@ -47,7 +47,7 @@ function GoogleIcon() {
 }
 
 function AuthPage() {
-  const { mode = "signin" } = Route.useSearch();
+  const { mode = "signin", invite } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
