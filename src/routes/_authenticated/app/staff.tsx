@@ -32,9 +32,9 @@ function StaffPage() {
   const orgId = user?.organization?.id ?? "";
   const { data: staff, isLoading } = useQuery({ ...myStaffQuery(orgId), enabled: Boolean(orgId) });
   const { data: sub } = useQuery({ ...mySubscriptionQuery(orgId), enabled: Boolean(orgId) });
-  const canManage = user?.isClientAdmin ?? false;
+  // Owners and branch managers can both add teammates.
+  const canManage = Boolean(user?.isClientAdmin) || Boolean(user?.roles.includes("branch_manager"));
   const [search, setSearch] = useState("");
-  const [invite, setInvite] = useState(false);
 
   const toggleActive = useMutation({
     mutationFn: async (v: { id: string; is_active: boolean }) => {
@@ -54,7 +54,9 @@ function StaffPage() {
         eyebrow="Team"
         title="Staff"
         description={sub?.plans?.user_limit ? `${staff?.length ?? 0} of ${sub.plans.user_limit} seats used on your plan.` : "Everyone with access to your workspace."}
-        actions={canManage ? <Button variant="gold" onClick={() => setInvite(true)}><UserPlus /> Invite teammate</Button> : undefined}
+        actions={canManage && user ? (
+          <InviteTeammate orgId={orgId} orgName={user.organization?.name ?? "your workspace"} inviterEmail={user.email} inviterId={user.id} />
+        ) : undefined}
       />
       <div className="relative mb-4 max-w-md">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
