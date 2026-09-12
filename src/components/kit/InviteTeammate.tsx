@@ -117,17 +117,77 @@ export function InviteTeammate({ orgId, orgName, inviterEmail, inviterId }: Prop
               <Textarea id="i-msg" rows={2} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Welcome aboard! Your shifts start Monday." />
             </div>
             <p className="rounded-lg bg-secondary px-3 py-2 text-xs text-muted-foreground">
-              We'll create the invite link and copy it for you. Use the <MailPlus className="inline size-3" /> button on the invitation to open a ready-written email.
+              <MailPlus className="mr-1 inline size-3" />
+              We copy the invite link and open a ready-written email addressed to them. You can resend it any time from the list below.
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button variant="gold" disabled={!form.email.includes("@") || invite.isPending} onClick={() => invite.mutate()}>
-              {invite.isPending ? "Creating…" : "Create invitation"}
+              {invite.isPending ? "Creating…" : "Create & email invite"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/** List of invitations that have not been accepted yet. */
+export function PendingInvitations({ orgId, orgName, inviterEmail }: Omit<Props, "inviterId">) {
+  const qc = useQueryClient();
+  const { data: invitations, isLoading } = useQuery({ ...invitationsQuery(orgId), enabled: Boolean(orgId) });
+
+  const update = useMutation({
+    mutationFn: async (v: { id: string; patch: { status?: string; expires_at?: string } }) => {
+      const { error } = await supabase.from("invitations").update(v.patch).eq("id", v.id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["org", orgId, "invitations"] }),
+    onError: (e: Error) => toast.error("Could not update the invitation", { description: e.message }),
+  });
+
+  const pending = (invitations ?? []).filter((i) => i.status !== "accepted");
+  if (!isLoading && pending.length === 0) return null;
+
+  return (
+    <SectionCard
+      title="Pending invitations"
+      description="They join your workspace automatically when they sign up with the invited email address."
+      className="mt-6"
+      bodyClassName="p-0"
+    >
+      <DataTable
+        loading={isLoading}
+        rows={pending}
+        rowKey={(i) => i.id}
+        empty="No pending invitations."
+        columns={[
+          { key: "who", header: "Invited", cell: (i) => <div><p className="font-medium">{i.full_name || i.email}</p><p className="text-xs text-muted-foreground">{i.email}</p></div> },
+          { key: "role", header: "Role", cell: (i) => <Badge variant={i.role === "branch_manager" ? "gold" : "secondary"}>{i.role === "branch_manager" ? "Branch manager" : "Staff"}</Badge> },
+          { key: "branch", header: "Branch", cell: (i) => i.branches?.name ?? "All branches" },
+          { key: "sent", header: "Created", cell: (i) => <span className="text-muted-foreground">{formatRelative(i.created_at)}</span> },
+          {
+            key: "state", header: "Status", cell: (i) =>
+              i.status === "revoked" ? <Badge variant="muted">Cancelled</Badge>
+                : new Date(i.expires_at) < new Date() ? <Badge variant="danger">Expired</Badge>
+                  : <Badge variant="info">Expires {formatDate(i.expires_at)}</Badge>,
+          },
+          {
+            key: "actions", header: "", cell: (i) => (
+              <div className="flex justify-end gap-1">
+                <Button size="icon" variant="ghost" title="Email this invitation" onClick={() => mailTo(i.email, i.token, orgName, inviterEmail)}><Mail className="size-4" /></Button>
+                <Button size="icon" variant="ghost" title="Copy invite link" onClick={() => void copyLink(i.token)}><Copy className="size-4" /></Button>
+                <Button
+                  size="icon" variant="ghost" title="Renew for 14 days"
+                  onClick={() => update.mutate({ id: i.id, patch: { status: "pending", expires_at: new Date(Date.now() + 14 * 864e5).toISOString() } })}
+                ><RotateCcw className="size-4" /></Button>
+                <Button size="icon" variant="ghost" title="Cancel invitation" onClick={() => update.mutate({ id: i.id, patch: { status: "revoked" } })}><X className="size-4" /></Button>
+              </div>
+            ),
+          },
+        ]}
+      />
+    </SectionCard>
   );
 }
