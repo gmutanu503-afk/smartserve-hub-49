@@ -99,39 +99,6 @@ export function InviteTeammate({ orgId, orgName, inviterEmail, inviterId }: Prop
     <>
       <Button variant="gold" onClick={() => setOpen(true)}><UserPlus /> Invite teammate</Button>
 
-      {pending.length > 0 && (
-        <SectionCard title="Pending invitations" description="They join your workspace automatically once they sign up with the invited email." className="mt-6" bodyClassName="p-0">
-          <DataTable
-            loading={isLoading}
-            rows={pending}
-            rowKey={(i) => i.id}
-            empty="No pending invitations."
-            columns={[
-              { key: "who", header: "Invited", cell: (i) => <div><p className="font-medium">{i.full_name || i.email}</p><p className="text-xs text-muted-foreground">{i.email}</p></div> },
-              { key: "role", header: "Role", cell: (i) => <Badge variant={i.role === "branch_manager" ? "gold" : "secondary"}>{i.role === "branch_manager" ? "Branch manager" : "Staff"}</Badge> },
-              { key: "branch", header: "Branch", cell: (i) => i.branches?.name ?? "All branches" },
-              { key: "sent", header: "Created", cell: (i) => <span className="text-muted-foreground">{formatRelative(i.created_at)}</span> },
-              {
-                key: "state", header: "Status", cell: (i) =>
-                  i.status === "revoked" ? <Badge variant="muted">Cancelled</Badge>
-                    : new Date(i.expires_at) < new Date() ? <Badge variant="danger">Expired</Badge>
-                      : <Badge variant="info">Expires {formatDate(i.expires_at)}</Badge>,
-              },
-              {
-                key: "actions", header: "", cell: (i) => (
-                  <div className="flex justify-end gap-1">
-                    <Button size="icon" variant="ghost" title="Email this invitation" onClick={() => mailTo(i.email, i.token)}><Mail className="size-4" /></Button>
-                    <Button size="icon" variant="ghost" title="Copy invite link" onClick={() => void copyLink(i.token)}><Copy className="size-4" /></Button>
-                    <Button size="icon" variant="ghost" title="Renew for 14 days" onClick={() => renew.mutate(i.id)}><RotateCcw className="size-4" /></Button>
-                    <Button size="icon" variant="ghost" title="Cancel invitation" onClick={() => revoke.mutate(i.id)}><X className="size-4" /></Button>
-                  </div>
-                ),
-              },
-            ]}
-          />
-        </SectionCard>
-      )}
-
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
