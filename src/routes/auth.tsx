@@ -187,14 +187,49 @@ function AuthPage() {
               <form onSubmit={onSubmit} className="space-y-4">
                 {mode === "signup" && (
                   <>
+                    {preview && (
+                      <div className="rounded-lg border border-gold/40 bg-gold-soft px-3 py-2 text-xs">
+                        You were invited to <span className="font-semibold">{preview.organization_name}</span> as{" "}
+                        <span className="font-semibold">{ROLE_COPY[preview.role] ?? preview.role}</span>. Sign up with{" "}
+                        <span className="font-semibold">{preview.email}</span> to join their workspace.
+                      </div>
+                    )}
+                    {!invite && (
+                      <div className="space-y-1.5">
+                        <Label>Which describes you?</Label>
+                        <div className="grid gap-2">
+                          {([
+                            { value: "owner", title: "I own or run this business", hint: "Creates a brand-new workspace for your business." },
+                            { value: "team", title: "I'm joining a team", hint: "A manager or owner must send you an invitation link." },
+                          ] as const).map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => setAccountType(opt.value)}
+                              className={`rounded-lg border px-3 py-2 text-left text-sm transition ${accountType === opt.value ? "border-gold bg-gold-soft" : "border-border hover:bg-secondary"}`}
+                            >
+                              <span className="font-medium">{opt.title}</span>
+                              <span className="block text-xs text-muted-foreground">{opt.hint}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       <Label htmlFor="fullName">Your name</Label>
                       <Input id="fullName" required autoComplete="name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="org">Business name</Label>
-                      <Input id="org" required placeholder="e.g. Savanna Grill House" value={form.organizationName} onChange={(e) => setForm({ ...form, organizationName: e.target.value })} />
-                    </div>
+                    {accountType === "owner" && (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="org">Business name</Label>
+                        <Input id="org" required placeholder="e.g. Savanna Grill House" value={form.organizationName} onChange={(e) => setForm({ ...form, organizationName: e.target.value })} />
+                      </div>
+                    )}
+                    {accountType === "team" && !invite && (
+                      <p className="rounded-lg bg-secondary px-3 py-2 text-xs text-muted-foreground">
+                        Ask your manager for your invitation link, then open it to finish signing up. It keeps you inside your own business's dashboard only.
+                      </p>
+                    )}
                   </>
                 )}
                 <div className="space-y-1.5">
