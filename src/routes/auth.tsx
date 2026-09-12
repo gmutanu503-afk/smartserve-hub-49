@@ -53,6 +53,20 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
   const [form, setForm] = useState({ fullName: "", organizationName: "", email: "", password: "" });
+  // Only two self-selectable account types — platform roles are never offered here.
+  const [accountType, setAccountType] = useState<"owner" | "team">(invite ? "team" : "owner");
+  const [preview, setPreview] = useState<InvitePreview | null>(null);
+
+  useEffect(() => {
+    if (!invite) return;
+    setAccountType("team");
+    void supabase.rpc("invitation_preview", { _token: invite }).then(({ data }) => {
+      const row = (data as InvitePreview[] | null)?.[0] ?? null;
+      setPreview(row);
+      if (row) setForm((f) => ({ ...f, email: row.email }));
+    });
+  }, [invite]);
+
 
   const goHome = async () => {
     queryClient.removeQueries({ queryKey: currentUserQueryKey });
