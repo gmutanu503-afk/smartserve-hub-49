@@ -91,7 +91,11 @@ function AuthPage() {
           password: form.password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: form.fullName, organization_name: form.organizationName },
+            data: {
+              full_name: form.fullName,
+              // Only owners create a new business; invited people join theirs.
+              organization_name: accountType === "owner" ? form.organizationName : "",
+            },
           },
         });
         if (error) throw error;
