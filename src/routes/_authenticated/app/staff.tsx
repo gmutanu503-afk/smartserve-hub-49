@@ -7,7 +7,7 @@ import { DataTable } from "@/components/kit/DataTable";
 import { PageHeader } from "@/components/kit/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InviteTeammate } from "@/components/kit/InviteTeammate";
+import { InviteTeammate, PendingInvitations } from "@/components/kit/InviteTeammate";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
